@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AxialMind Labs</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4F2EE; /* Natural, slightly off-white bamboo paper tone */
+        }
+        .ui-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        /* Engineering grid backdrop inspired by image_1.png */
+        .printer-grid-bg {
+            background-image: 
+                linear-gradient(rgba(180, 160, 140, 0.08) 1.5px, transparent 1.5px),
+                linear-gradient(90deg, rgba(180, 160, 140, 0.08) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+        }
+        /* Subtly animated print bed glow effect */
+        .print-head-glow {
+            box-shadow: 0 0 25px rgba(230, 210, 170, 0.35);
+        }
+    </style>
+</head>
+<body class="relative min-h-screen text-stone-800 overflow-hidden flex flex-col justify-between p-6 md:p-10">
+
+    <canvas id="printLayerCanvas" class="absolute inset-0 z-0"></canvas>
+    
+    <div class="absolute inset-0 printer-grid-bg z-5 pointer-events-none"></div>
+
+    <header class="relative z-10 w-full max-w-7xl mx-auto flex justify-between items-center bg-white/80 backdrop-blur-md p-5 rounded-xl border border-stone-200/60 shadow-sm flex-shrink-0">
+        <div class="flex items-center space-x-4">
+            <div class="w-3.5 h-3.5 rounded-full bg-[#E6D4AE] print-head-glow border-2 border-stone-900/10"></div>
+            <div class="text-stone-950 ui-font">
+                <span class="font-bold text-xl tracking-tight">AXIALMIND</span>
+                <span class="font-medium text-xl text-stone-600"> LABS</span>
+            </div>
+        </div>
+        
+        <div class="flex items-center space-x-3 text-xs font-mono tracking-wider text-stone-600 bg-stone-100 px-4 py-2 rounded-lg border border-stone-200/80">
+            <span class="text-[#8B7355] font-bold">●</span>
+            <span>SYSTEM: READY</span>
+            <span class="text-stone-300">|</span>
+            <span>TEMP: NOMINAL</span>
+        </div>
+    </header>
+
+    <div class="relative z-10 flex-grow flex items-center justify-center w-full my-4">
+        <main class="w-full max-w-4xl mx-auto text-center flex flex-col items-center bg-white/40 backdrop-blur-sm p-8 md:p-12 rounded-3xl border border-stone-200/40 shadow-xs">
+            
+            <div class="inline-flex items-center space-x-3 bg-[#1C1C1C] px-5 py-2 rounded-full border border-stone-900/80 mb-10 text-xs tracking-widest text-[#E6D4AE] font-semibold uppercase font-mono shadow-inner">
+                <span class="w-2 h-2 rounded-full bg-[#E6D4AE] animate-pulse"></span>
+                <span>Layer 00 // System Initialization // Material Loading</span>
+            </div>
+
+            <h1 class="ui-font text-5xl md:text-7xl font-bold tracking-tight text-stone-950 mb-8 uppercase leading-tight">
+                Engineering <br> 
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-stone-900 via-[#8B7355] to-stone-950">
+                    Your Vision.
+                </span>
+            </h1>
+
+            <p class="text-stone-700 text-lg md:text-xl max-w-2xl font-normal mb-14 leading-relaxed tracking-wide bg-stone-100/60 p-4 rounded-lg border border-stone-200/50">
+                The print bed is heating. Our core structural modules are aligning. Final layer coordinates are being locked. System initialization is imminent.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center gap-5 w-full justify-center">
+                <div class="px-8 py-4 bg-white text-stone-950 font-semibold rounded-xl border border-stone-200 shadow-sm text-sm tracking-wide uppercase font-mono">
+                    System Status: 65%
+                </div>
+                <a href="mailto:info@axialmindlabs.in" class="w-full sm:w-auto px-8 py-4 bg-stone-950 hover:bg-stone-800 text-white font-medium rounded-xl transition-all duration-200 shadow-lg text-sm tracking-wide uppercase font-mono">
+                    Connect // info@axialmindlabs.in
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <header class="relative z-10 w-full max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/80 backdrop-blur-md p-5 rounded-xl border border-stone-200/60 text-stone-600 text-xs flex-shrink-0">
+        <p class="font-medium">&copy; 2026 AXIALMIND LABS. STRUCTURE: OPTIMIZED.</p>
+        <div class="flex items-center space-x-5 font-mono text-[11px] tracking-wider text-stone-500 bg-stone-100 px-3 py-1.5 rounded-lg border border-stone-200/50">
+            <span>SPEED: 500MM/S</span>
+            <span>FILAMENT: CARBON // READY</span>
+            <span>CALIBRATION: PASSED</span>
+        </div>
+    </header>
+
+    <script>
+        const canvas = document.getElementById('printLayerCanvas');
+        const ctx = canvas.getContext('2d');
+        const mouse = { x: null, y: null, radius: 250 };
+        let printPaths = [];
+
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            printPaths = [];
+            for (let i = 0; i < 25; i++) {
+                printPaths.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 1,
+                    speedX: Math.random() * 0.5 - 0.25,
+                    speedY: Math.random() * 0.5 - 0.25,
+                    alpha: Math.random() * 0.4 + 0.1
+                });
+            }
+        }
+
+        function drawLayerSimulation() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (mouse.x && mouse.y) {
+                let gradient = ctx.createRadialGradient(mouse.x, mouse.y, 10, mouse.x, mouse.y, mouse.radius);
+                gradient.addColorStop(0, 'rgba(230, 212, 174, 0.2)');
+                gradient.addColorStop(0.6, 'rgba(230, 212, 174, 0.05)');
+                gradient.addColorStop(1, 'rgba(230, 212, 174, 0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(mouse.x, mouse.y, mouse.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.lineWidth = 1;
+            for (let i = 0; i < printPaths.length; i++) {
+                const pathA = printPaths[i];
+                
+                ctx.fillStyle = `rgba(139, 115, 85, ${pathA.alpha})`;
+                ctx.beginPath();
+                ctx.arc(pathA.x, pathA.y, pathA.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let j = i + 1; j < printPaths.length; j++) {
+                    const pathB = printPaths[j];
+                    const dist = Math.hypot(pathA.x - pathB.x, pathA.y - pathB.y);
+                    if (dist < 180) {
+                        ctx.strokeStyle = `rgba(180, 160, 140, ${pathA.alpha * (1 - dist/180) * 0.5})`;
+                        ctx.beginPath();
+                        ctx.moveTo(pathA.x, pathA.y);
+                        ctx.lineTo(pathB.x, pathB.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            if (mouse.x && mouse.y) {
+                ctx.beginPath();
+                ctx.arc(mouse.x, mouse.y, 6, 0, Math.PI * 2);
+                ctx.fillStyle = '#8B7355'; 
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(28, 28, 28, 0.2)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        function animate() {
+            drawLayerSimulation();
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        window.addEventListener('resize', initCanvas);
+        
+        initCanvas();
+        animate();
+    </script>
+</body>
+</html>
